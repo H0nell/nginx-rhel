@@ -1,0 +1,34 @@
+- name: Add nginx repository
+  become: yes
+  yum_repository:
+    name: nginx
+    description: repo for nginx stable install
+    baseurl: http://nginx.org/packages/centos/{{ ansible_distribution_major_version }}/$basearch/
+    gpgcheck: no
+
+- name: install nginx from repo
+  become: yes
+  yum:
+    name: nginx
+    state: present
+    update_cache: yes
+    enablerepo: nginx
+
+- name: allow access to ports 80 and 443
+  become: yes
+  firewalld:
+    permanent: yes
+    state: enabled
+    immediate: yes
+    zone: public
+    service: "{{ item }}"
+  when: ansible_os_family == 'RedHat'
+  loop:
+  - http
+  - https
+
+- name: add rule for selinux
+  become: yes
+  selinux_permissive:
+    domain: httpd_t
+    permissive: yes

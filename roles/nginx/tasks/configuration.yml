@@ -1,0 +1,31 @@
+- name: template nginx.conf
+  become: yes
+  template:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+  notify:
+  - restart nginx
+
+- name: copy archive with location and upstream configuration
+  unarchive:
+    src: configuration.tar.gz
+    dest: /tmp/configuration
+    remote_src: yes
+
+- name: copy new configuration and backup old
+  become: yes
+  copy:
+    src: /tmp/configuration/{{ item }}
+    dest: /etc/nginx/includes/
+    backup: yes
+  loop:
+  - location.conf
+  - upstreams.conf
+
+- name: check nginx configuration
+  become: yes
+  command: "nginx -t"
+  register: config_validation
+
+- flush_handlers
+#  when: config_validation is ok
