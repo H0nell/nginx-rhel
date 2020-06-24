@@ -31,4 +31,4 @@
     name: nginx
     state: restarted
     enabled: yes
-  when: config_validation is ok
+  when: config_validation.rc == 0
